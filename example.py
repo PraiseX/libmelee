@@ -6,9 +6,12 @@ import melee
 import random
 
 from melee.enums import Action
+from melee.gamestate import GameState
+from melee import *
 
 # This example program demonstrates how to use the Melee API to run a console,
 #   setup controllers, and send button presses over to a console
+
 
 def check_port(value):
     ivalue = int(value)
@@ -16,6 +19,7 @@ def check_port(value):
         raise argparse.ArgumentTypeError("%s is an invalid controller port. \
                                          Must be 1, 2, 3, or 4." % value)
     return ivalue
+
 
 parser = argparse.ArgumentParser(description='Example of libmelee in action')
 parser.add_argument('--port', '-p', type=check_port,
@@ -65,14 +69,17 @@ controller_opponent = melee.Controller(console=console,
                                        type=melee.ControllerType.GCN_ADAPTER)
 
 # This isn't necessary, but makes it so that Dolphin will get killed when you ^C
+
+
 def signal_handler(sig, frame):
     console.stop()
     if args.debug:
         log.writelog()
-        print("") #because the ^C will be on the terminal
+        print("")  # because the ^C will be on the terminal
         print("Log file created: " + log.filename)
     print("Shutting down cleanly...")
     sys.exit(0)
+
 
 signal.signal(signal.SIGINT, signal_handler)
 
@@ -100,17 +107,16 @@ costume = 0
 framedata = melee.framedata.FrameData()
 
 
-def waveShine(gameState):
+def waveShine():
     controller.press_button(melee.enums.Button.BUTTON_B)
-    controller.tilt_analog(melee.enums.Button.BUTTON_MAIN,0.5,0)
-                
-    if gameState.players[2].action == Action.DOWN_B_STUN:
-         controller.press_button(melee.enums.Button.BUTTON_X)
-        #controller.press_shoulder(melee.enums.Button.BUTTON_R,1)
-        # controller.tilt_analog(melee.enums.Button.BUTTON_MAIN,0.5,0)
-    else:
-        controller.empty_input()
-               
+    controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
+
+    if gamestate.players[2].action == Action.DOWN_B_STUN:
+        controller.press_button(melee.enums.Button.BUTTON_X)
+    if gamestate.players[2].action in jumping:
+        controller.press_button(melee.enums.Button.BUTTON_R)
+        controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
+
 
 # Main loop
 while True:
@@ -122,7 +128,8 @@ while True:
     # The console object keeps track of how long your bot is taking to process frames
     #   And can warn you if it's taking too long
     if console.processingtime * 1000 > 12:
-        print("WARNING: Last frame took " + str(console.processingtime*1000) + "ms to process.")
+        print("WARNING: Last frame took " +
+              str(console.processingtime*1000) + "ms to process.")
 
     # What menu are we in?
     if gamestate.menu_state in [melee.Menu.IN_GAME, melee.Menu.SUDDEN_DEATH]:
@@ -132,27 +139,49 @@ while True:
         #   port we actually are.
         discovered_port = args.port
         if args.connect_code != "":
-            discovered_port = melee.gamestate.port_detector(gamestate, melee.Character.FOX, costume)
+            discovered_port = melee.gamestate.port_detector(
+                gamestate, melee.Character.FOX, costume)
         if discovered_port > 0:
             # NOTE: This is where your AI does all of its stuff!
             # This line will get hit once per frame, so here is where you read
             #   in the gamestate and decide what buttons to push on the controller
-            jumping = [Action.JUMPING_ARIAL_FORWARD, Action.JUMPING_ARIAL_BACKWARD]
+
+            controller.release_all()
+
+
+            # attack
+            jumping = [Action.JUMPING_ARIAL_FORWARD,
+                       Action.JUMPING_ARIAL_BACKWARD]
             if gamestate.distance < 10:
-                controller.press_button(melee.enums.Button.BUTTON_B)
-                controller.tilt_analog(melee.enums.Button.BUTTON_MAIN,0.5,0)
+                waveShine()
 
-                if gamestate.players[2].action == Action.DOWN_B_STUN:
-                     controller.press_button(melee.enums.Button.BUTTON_X)
-                if gamestate.players[2].action in jumping:
-                     controller.press_button(melee.enums.Button.BUTTON_R)
-                     controller.tilt_analog(melee.enums.Button.BUTTON_MAIN,0.5,0)
 
-                   
-        #controller.press_shoulder(melee.enums.Button.BUTTON_R,1)
-        # controller.tilt_analog(melee.enums.Button.BUTTON_MAIN,0.5,0)
+            knockDown = [Action.LYING_GROUND_UP,
+                         Action.LYING_GROUND_DOWN, Action.LYING_GROUND_UP_HIT]
+            # defense
+            if gamestate.players[2].action in knockDown :
+                defenseChoice = random.randint(0, 3)
+                #print(defenseChoice)
+                # up
+                if defenseChoice == 0:
+                    controller.tilt_analog(
+                        melee.enums.Button.BUTTON_MAIN, -0.5, 0)
+                # left
+                if defenseChoice == 1:
+                    controller.tilt_analog(
+                        melee.enums.Button.BUTTON_MAIN, 0, -0.5)
+                # right
+                if defenseChoice == 2:
+                    controller.tilt_analog(
+                        melee.enums.Button.BUTTON_MAIN, 0, 0.5)
+                # a button
+                if defenseChoice == 3:
+                    controller.press_button(melee.Button.BUTTON_A)
+
             else:
-                controller.empty_input()
+                 #neutral
+                onleft= gamestate.players[2].x < gamestate.players[1].x
+                controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, int(onleft), 0.5)
         else:
             # If the discovered port was unsure, reroll our costume for next time
             costume = random.randint(0, 4)
