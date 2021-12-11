@@ -107,14 +107,14 @@ framedata = melee.framedata.FrameData()
 
 # Our action functions
 def waveShine():
-    controller.press_button(melee.enums.Button.BUTTON_B)
-    controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
+    controller.press_button(melee.Button.BUTTON_B)
+    controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
 
     if gamestate.players[2].action == Action.DOWN_B_STUN:
-        controller.press_button(melee.enums.Button.BUTTON_X)
+        controller.press_button(melee.Button.BUTTON_X)
     if gamestate.players[2].action in jumping:
-        controller.press_button(melee.enums.Button.BUTTON_R)
-        controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0.5, 0)
+        controller.press_button(melee.Button.BUTTON_R)
+        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
 
 def getup():
     defenseChoice = random.randint(0, 3)
@@ -135,26 +135,60 @@ def getup():
 
 def recover(gamestate, pos):
     if pos == "above":
-        if gamestate.players[2].x > 0:
+        if gamestate.players[1].x > 0:
             controller.press_button(melee.Button.BUTTON_B)
             controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
-            print("wants to side b left")
+            # print("wants to side b left")
 
         else:
             controller.press_button(melee.Button.BUTTON_B)
             controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 0.5)
-            print("wants to side b right")
+            # print("wants to side b right")
 
     elif pos == "below":
-        if gamestate.players[2].x > 0:
+        if gamestate.players[1].x > 0:
             controller.press_button(melee.Button.BUTTON_B)
             controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 1)
-            print("wants to up b left")
+            # print("wants to up b left")
 
         else:
             controller.press_button(melee.Button.BUTTON_B)
             controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 1)
-            print("wants to up b right")
+            # print("wants to up b right")
+
+def thissucks(gamestate):
+    if gamestate.distance < 10:
+        controller.press_button(melee.Button.BUTTON_B)
+        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
+
+        if gamestate.players[2].action == Action.DOWN_B_STUN:
+            controller.press_button(melee.Button.BUTTON_X)
+        if gamestate.players[2].action in jumping:
+            controller.press_button(melee.Button.BUTTON_R)
+            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
+
+    if abs(gamestate.players[2].x) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
+            # is above ledge
+            if abs(gamestate.players[2].y) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
+                if gamestate.players[2].x > 0:
+                    controller.press_button(melee.Button.BUTTON_B)
+                    controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 0.5)
+                    # print("wants to side b left")
+                else:
+                    controller.press_button(melee.Button.BUTTON_B)
+                    controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 0.5)
+                    # print("wants to side b right")
+
+            else:
+                if gamestate.players[2].x > 0:
+                    controller.press_button(melee.Button.BUTTON_B)
+                    controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 0, 1)
+                    # print("wants to up b left")
+
+                else:
+                    controller.press_button(melee.Button.BUTTON_B)
+                    controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, 1, 1)
+                    # print("wants to up b right")
 
 # Main loop
 while True:
@@ -186,33 +220,88 @@ while True:
 
             controller.release_all()
 
-            # attack
             knockDown = [Action.LYING_GROUND_UP, Action.LYING_GROUND_DOWN, Action.LYING_GROUND_UP_HIT]
             jumping = [Action.JUMPING_ARIAL_FORWARD, Action.JUMPING_ARIAL_BACKWARD]
 
-            # if gamestate.distance < 10:
-            #     waveShine()
+            # Nuetral Game
+            if gamestate.distance > 15:
+                # Follow
+                onleft = gamestate.players[2].x < gamestate.players[1].x
+                controller.tilt_analog(melee.Button.BUTTON_MAIN, int(onleft), 0.5)
+                print(gamestate.players[2].action)
+                # if abs(gamestate.players[2].x) < abs(melee.stages.EDGE_POSITION[gamestate.stage]) - 5:
+                #     controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0.5)
 
-            # defense
-            # if gamestate.players[2].action in knockDown:
-            #     getup()
-
-            # recovery
-            if abs(gamestate.players[2].x) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
+            # Recover
+            elif abs(gamestate.players[2].x) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
                 # is above ledge
                 if abs(gamestate.players[2].y) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
-                    recover(gamestate, "above")
-                # is below ledge
-                else:
-                    recover(gamestate, "below")
+                    if gamestate.players[2].x > 0:
+                        controller.press_button(melee.Button.BUTTON_B)
+                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
+                        # print("wants to side b left")
+                    else:
+                        controller.press_button(melee.Button.BUTTON_B)
+                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 0.5)
+                        # print("wants to side b right")
 
+                else:
+                    if gamestate.players[2].x > 0:
+                        controller.press_button(melee.Button.BUTTON_B)
+                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 1)
+                        # print("wants to up b left")
+
+                    else:
+                        controller.press_button(melee.Button.BUTTON_B)
+                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 1)
+                        # print("wants to up b right")
+
+            # Attacking
             else:
-                controller.empty_input()
-                # print("lmao")
-                # print(gamestate.players[1].x, gamestate.players[1].y)
-                #neutral
-                # onleft = gamestate.players[2].x < gamestate.players[1].x
-                # controller.tilt_analog(melee.enums.Button.BUTTON_MAIN, int(onleft), 0.5)
+                # Get some damage in
+                if gamestate.players[1].percent < 80:
+
+                    # Shine
+                    if gamestate.distance < 10:
+                        controller.press_button(melee.Button.BUTTON_B)
+                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
+                        if gamestate.players[2].action == Action.DOWN_B_STUN:
+                            controller.press_button(melee.Button.BUTTON_X)
+                        if gamestate.players[2].action in jumping:
+                            controller.press_button(melee.Button.BUTTON_R)
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
+
+                    # Get up
+                    if gamestate.players[2].action in knockDown:
+                        defenseChoice = random.randint(0, 3)
+                        # up
+                        if defenseChoice == 0:
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 1)
+                        # left
+                        if defenseChoice == 1:
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
+                        # right
+                        if defenseChoice == 2:
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 0.5)
+                        # a button
+                        if defenseChoice == 3:
+                            controller.press_button(melee.Button.BUTTON_A)
+                        controller.empty_input()
+
+                    # Get off ledge
+                    if gamestate.players[2].action == Action.EDGE_HANGING:
+                        if gamestate.players[2].x > 0:
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
+                            print("wants to get off ledge")
+                        else:
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 0.5)
+                            print("wants to get off ledge")
+                else:
+                    # Forward smash
+                    if gamestate.distance < 10:
+                        print("pog")
+
+
         else:
             # If the discovered port was unsure, reroll our costume for next time
             costume = random.randint(0, 4)
@@ -222,8 +311,7 @@ while True:
             log.logframe(gamestate)
             log.writeframe()
     else:
-        melee.MenuHelper.menu_helper_simple(gamestate,
-                                            controller,
+        melee.MenuHelper.menu_helper_simple(gamestate, controller,
                                             melee.Character.FOX,
                                             melee.Stage.YOSHIS_STORY,
                                             args.connect_code,
