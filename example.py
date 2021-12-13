@@ -225,10 +225,12 @@ while True:
             #print(gamestate.players[2].x, gamestate.players[2].y)
            
        
-            
+            distanceY = abs(gamestate.players[1].y - gamestate.players[2].y)
+            print(distanceY)
             # Nuetral Game
-            if gamestate.distance > 15:
+            if gamestate.distance > 15 and distanceY <= 30:
                 # Follow
+
                 onleft = gamestate.players[2].x < gamestate.players[1].x
                 controller.tilt_analog(melee.Button.BUTTON_MAIN, int(onleft), 0.5)
                 # if abs(gamestate.players[2].x) < abs(melee.stages.EDGE_POSITION[gamestate.stage]) - 5:
@@ -241,44 +243,64 @@ while True:
 
             # Recover
             if abs(gamestate.players[2].x) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
+                #print(melee.stages.EDGE_POSITION[gamestate.stage].x)
+                    #print(melee.stages.EDGE_POSITION[gamestate.stage].y)
+                    # print(gamestate.players[2].x)
+                    if gamestate.players[2].x <= -melee.stages.EDGE_POSITION[gamestate.stage] - 10:
+                        if gamestate.players[2].y >= -17:
+                            controller.press_button(melee.Button.BUTTON_B)
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 0.5)
+                            # print("wants to side b right")
 
-                # is above ledge
-                if abs(gamestate.players[2].y) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
-                    if gamestate.players[2].x > 0:
-                        controller.press_button(melee.Button.BUTTON_B)
-                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
-                        # print("wants to side b left")
-                    else:
-                        controller.press_button(melee.Button.BUTTON_B)
-                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 0.5)
-                        # print("wants to side b right")
+                        elif gamestate.players[2].y < -30:
+                            controller.press_button(melee.Button.BUTTON_B)
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 1)
+                            # print("wants to up b right")
+                        else:
+                            controller.press_button(melee.Button.BUTTON_Y)
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 0.5)
+                            # print("wants to jump right")
 
-                else:
-                    if gamestate.players[2].x > 0:
-                        controller.press_button(melee.Button.BUTTON_B)
-                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 1)
-                        # print("wants to up b left")
+                    elif gamestate.players[2].x >= melee.stages.EDGE_POSITION[gamestate.stage] + 10:
+                        if gamestate.players[2].y >= -17:
 
-                    else:
-                        controller.press_button(melee.Button.BUTTON_B)
-                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 1, 1)
-                        # print("wants to up b right")
+                            controller.press_button(melee.Button.BUTTON_B)
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
+                            # print("wants to side b left")
 
+                        elif gamestate.players[2].y < -30:
+                            controller.press_button(melee.Button.BUTTON_B)
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 1)
+                            # print("wants to up b left")
+                        else:
+                            controller.press_button(melee.Button.BUTTON_Y)
+                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0, 0.5)
+                            # print("wants to jump left")          
             # Attacking
             else:
                 # Get some damage in
                 if gamestate.players[1].percent < 70:
-
-                    # Shine
+                    
+                    attackPick = random.randint(0, 2)
                     if gamestate.distance < 10:
-                        controller.press_button(melee.Button.BUTTON_B)
-                        controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
-                        
-                        if gamestate.players[2].action == Action.DOWN_B_STUN:
-                            controller.press_button(melee.Button.BUTTON_X)
-                        if gamestate.players[2].action in jumping:
-                            controller.press_button(melee.Button.BUTTON_R)
-                            controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
+                        #Nair
+                        if attackPick == 0:
+                            nair = True
+                            controller.press_button()
+                            nair= False
+                        #Grab
+                        elif attackPick == 1:
+                            print()
+                        else:        
+                            # Shine
+                                controller.press_button(melee.Button.BUTTON_B)
+                                controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
+                                
+                                if gamestate.players[2].action == Action.DOWN_B_STUN:
+                                    controller.press_button(melee.Button.BUTTON_X)
+                                if gamestate.players[2].action in jumping:
+                                    controller.press_button(melee.Button.BUTTON_R)
+                                    controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
 
                     # Get up
                     if gamestate.players[2].action in knockDown:
