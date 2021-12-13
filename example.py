@@ -109,7 +109,7 @@ framedata = melee.framedata.FrameData()
 def waveShine():
     controller.press_button(melee.Button.BUTTON_B)
     controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
-
+    
     if gamestate.players[2].action == Action.DOWN_B_STUN:
         controller.press_button(melee.Button.BUTTON_X)
     if gamestate.players[2].action in jumping:
@@ -222,8 +222,10 @@ while True:
 
             knockDown = [Action.LYING_GROUND_UP, Action.LYING_GROUND_DOWN, Action.LYING_GROUND_UP_HIT]
             jumping = [Action.JUMPING_ARIAL_FORWARD, Action.JUMPING_ARIAL_BACKWARD]
-            print(gamestate.players[2].x, gamestate.players[2].y)
-
+            #print(gamestate.players[2].x, gamestate.players[2].y)
+           
+       
+            
             # Nuetral Game
             if gamestate.distance > 15:
                 # Follow
@@ -231,14 +233,14 @@ while True:
                 controller.tilt_analog(melee.Button.BUTTON_MAIN, int(onleft), 0.5)
                 # if abs(gamestate.players[2].x) < abs(melee.stages.EDGE_POSITION[gamestate.stage]) - 5:
                 #     controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0.5)
-
+            
             # Get off ledge
-            elif abs(gamestate.players[2].x) == 57.92 and gamestate.players[2].y == -17.9:
-                controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 1)
+            if gamestate.players[2].action == Action.EDGE_HANGING:
+                controller.press_button(melee.Button.BUTTON_A)
                 print("wants to get off ledge")
 
             # Recover
-            elif abs(gamestate.players[2].x) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
+            if abs(gamestate.players[2].x) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
 
                 # is above ledge
                 if abs(gamestate.players[2].y) > abs(melee.stages.EDGE_POSITION[gamestate.stage]):
@@ -271,6 +273,7 @@ while True:
                     if gamestate.distance < 10:
                         controller.press_button(melee.Button.BUTTON_B)
                         controller.tilt_analog(melee.Button.BUTTON_MAIN, 0.5, 0)
+                        
                         if gamestate.players[2].action == Action.DOWN_B_STUN:
                             controller.press_button(melee.Button.BUTTON_X)
                         if gamestate.players[2].action in jumping:
